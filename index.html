@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Color Match Blast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #061a06;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Base Safari Pattern */
+        .safari-bg {
+            background-attachment: fixed;
+            transition: background 1s ease-in-out, background-color 1s ease-in-out;
+        }
+
+        /* Classic: Deep Jungle Green */
+        .safari-bg-classic {
+            background-color: #052e16;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(34, 197, 94, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(20, 83, 45, 0.3) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 C70 30 90 40 110 60 C90 80 70 90 60 110 C50 90 30 80 10 60 C30 40 50 30 60 10' fill='%23064e3b' fill-opacity='0.4'/%3E%3C/svg%3E");
+        }
+
+        /* Time Attack: Sunset Savanna Red/Orange */
+        .safari-bg-time {
+            background-color: #2e0505;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(239, 68, 68, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 20% 80%, rgba(153, 27, 27, 0.3) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 C70 30 90 40 110 60 C90 80 70 90 60 110 C50 90 30 80 10 60 C30 40 50 30 60 10' fill='%23450a0a' fill-opacity='0.4'/%3E%3C/svg%3E");
+        }
+
+        /* Kids: Sunny Oasis Teal/Blue */
+        .safari-bg-kids {
+            background-color: #05232e;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(8, 51, 68, 0.3) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 C70 30 90 40 110 60 C90 80 70 90 60 110 C50 90 30 80 10 60 C30 40 50 30 60 10' fill='%23083344' fill-opacity='0.4'/%3E%3C/svg%3E");
+        }
+
+        .vines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background-image: url("data:image/svg+xml,%3Csvg width='400' height='150' viewBox='0 0 400 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 Q50 100 100 20 Q150 120 200 40 Q250 130 300 50 Q350 110 400 0' stroke='%2314532d' stroke-width='4' fill='none'/%3E%3Ccircle cx='50' cy='80' r='10' fill='%23166534'/%3E%3Ccircle cx='150' cy='100' r='12' fill='%23166534'/%3E%3Ccircle cx='250' cy='110' r='8' fill='%23166534'/%3E%3Ccircle cx='350' cy='90' r='10' fill='%23166534'/%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            pointer-events: none;
+            opacity: 0.6;
+            z-index: 5;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+  }
+}
+</script>
+</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+      // Register the service worker for offline support
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('Safari SW registered!', reg.scope);
+          }).catch((err) => {
+            console.warn('Safari SW failed:', err);
+          });
+        });
+      }
+    </script>
+</body>
+</html>
