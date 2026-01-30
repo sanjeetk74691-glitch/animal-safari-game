@@ -1,9 +1,8 @@
 
-const CACHE_NAME = 'safari-match-v1';
+const CACHE_NAME = 'safari-match-v2';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/index.tsx',
+  './',
+  './index.html',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap'
 ];
@@ -33,23 +32,25 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // We use a Cache-First strategy for a smooth offline game experience
+  // Network first for JS/TS files to avoid stale modules on deploy
+  if (event.request.url.includes('.tsx') || event.request.url.includes('.ts') || event.request.url.includes('esm.sh')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache first for everything else (images, fonts, tailwind)
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((fetchResponse) => {
         return caches.open(CACHE_NAME).then((cache) => {
-          // Cache external assets (like esm.sh or fonts) as they are requested
           if (event.request.url.startsWith('http')) {
             cache.put(event.request, fetchResponse.clone());
           }
           return fetchResponse;
         });
       });
-    }).catch(() => {
-      // Offline fallback for the main page if needed
-      if (event.request.mode === 'navigate') {
-        return caches.match('/index.html');
-      }
     })
   );
 });
