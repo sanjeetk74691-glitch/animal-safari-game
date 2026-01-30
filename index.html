@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,14 +25,10 @@
         .floating {
             animation: float 3s ease-in-out infinite;
         }
-        
-        /* Base Safari Pattern */
         .safari-bg {
             background-attachment: fixed;
             transition: background 1s ease-in-out, background-color 1s ease-in-out;
         }
-
-        /* Classic: Deep Jungle Green */
         .safari-bg-classic {
             background-color: #052e16;
             background-image: 
@@ -41,8 +36,6 @@
                 radial-gradient(circle at 80% 80%, rgba(20, 83, 45, 0.3) 0%, transparent 50%),
                 url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 C70 30 90 40 110 60 C90 80 70 90 60 110 C50 90 30 80 10 60 C30 40 50 30 60 10' fill='%23064e3b' fill-opacity='0.4'/%3E%3C/svg%3E");
         }
-
-        /* Time Attack: Sunset Savanna Red/Orange */
         .safari-bg-time {
             background-color: #2e0505;
             background-image: 
@@ -50,8 +43,6 @@
                 radial-gradient(circle at 20% 80%, rgba(153, 27, 27, 0.3) 0%, transparent 50%),
                 url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 C70 30 90 40 110 60 C90 80 70 90 60 110 C50 90 30 80 10 60 C30 40 50 30 60 10' fill='%23450a0a' fill-opacity='0.4'/%3E%3C/svg%3E");
         }
-
-        /* Kids: Sunny Oasis Teal/Blue */
         .safari-bg-kids {
             background-color: #05232e;
             background-image: 
@@ -59,7 +50,6 @@
                 radial-gradient(circle at 80% 80%, rgba(8, 51, 68, 0.3) 0%, transparent 50%),
                 url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 10 C70 30 90 40 110 60 C90 80 70 90 60 110 C50 90 30 80 10 60 C30 40 50 30 60 10' fill='%23083344' fill-opacity='0.4'/%3E%3C/svg%3E");
         }
-
         .vines {
             position: absolute;
             top: 0;
@@ -74,27 +64,23 @@
         }
     </style>
     <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
-  }
-}
-</script>
+    {
+      "imports": {
+        "react": "https://esm.sh/react@19.0.0",
+        "react-dom": "https://esm.sh/react-dom@19.0.0",
+        "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.460.0"
+      }
+    }
+    </script>
 </head>
 <body>
     <div id="root"></div>
-    <!-- Load the application entry point -->
-    <script type="module" src="./index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
     <script>
-      // Register the service worker for offline support
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').then((reg) => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
             console.log('Safari SW registered!', reg.scope);
           }).catch((err) => {
             console.warn('Safari SW failed:', err);

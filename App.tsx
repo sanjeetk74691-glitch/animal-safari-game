@@ -1,14 +1,13 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameMode, GameStatus, GameSettings, HighScores } from './types';
-import { MAX_LIVES } from './constants';
-import GameEngine from './components/GameEngine';
-import SplashScreen from './components/SplashScreen';
-import HomeScreen from './components/HomeScreen';
-import ModeSelector from './components/ModeSelector';
-import SettingsScreen from './components/SettingsScreen';
-import GameOverScreen from './components/GameOverScreen';
-import InfoScreen from './components/InfoScreen';
+import { GameMode, GameStatus, GameSettings, HighScores } from './types.ts';
+import { MAX_LIVES } from './constants.ts';
+import GameEngine from './components/GameEngine.tsx';
+import SplashScreen from './components/SplashScreen.tsx';
+import HomeScreen from './components/HomeScreen.tsx';
+import ModeSelector from './components/ModeSelector.tsx';
+import SettingsScreen from './components/SettingsScreen.tsx';
+import GameOverScreen from './components/GameOverScreen.tsx';
+import InfoScreen from './components/InfoScreen.tsx';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<GameStatus>(GameStatus.SPLASH);
@@ -27,7 +26,6 @@ const App: React.FC = () => {
     currentTheme: 'default',
   });
 
-  // Load persistence
   useEffect(() => {
     const savedScores = localStorage.getItem('cm_highscores');
     if (savedScores) setHighScores(JSON.parse(savedScores));
@@ -60,7 +58,6 @@ const App: React.FC = () => {
   };
 
   const getDynamicBgClass = () => {
-    // If we are in the middle of a game experience, use the mode-specific background
     const inGameExperience = [
       GameStatus.PLAYING,
       GameStatus.PAUSED,
@@ -78,8 +75,6 @@ const App: React.FC = () => {
           return 'safari-bg-classic';
       }
     }
-
-    // Default to classic for home/menus
     return 'safari-bg-classic';
   };
 

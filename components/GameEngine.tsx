@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameMode, GameObject, ColorInfo, GameSettings } from '../types';
-import { COLORS, SPEED_INITIAL, SPAWN_RATE_INITIAL, MAX_LIVES, TIME_LIMIT, SCORE_PER_LEVEL, MAX_LEVEL } from '../constants';
+import { GameMode, GameObject, ColorInfo, GameSettings } from '../types.ts';
+import { COLORS, SPEED_INITIAL, SPAWN_RATE_INITIAL, MAX_LIVES, TIME_LIMIT, SCORE_PER_LEVEL, MAX_LEVEL } from '../constants.ts';
 import { Heart, Pause, Trophy, Star } from 'lucide-react';
 
 interface FloatingText {
@@ -169,33 +168,6 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
         createNoise(150, 0.8, 0.5);
         createOsc('sawtooth', 45, now, now + 0.8, 0.3);
         break;
-      case 'cheetah':
-        createOsc('sine', 1800, now, now + 0.1, 0.2);
-        createOsc('sine', 1700, now + 0.15, now + 0.25, 0.15);
-        break;
-      case 'hippo':
-        createNoise(80, 1.2, 0.6);
-        createOsc('square', 30, now, now + 1.2, 0.2);
-        break;
-      case 'camel':
-        const camOsc = createOsc('sawtooth', 120, now, now + 0.6, 0.2);
-        camOsc.frequency.exponentialRampToValueAtTime(80, now + 0.6);
-        break;
-      case 'squirrel':
-        for(let i=0; i<6; i++) createOsc('sine', 3500 + (Math.random()*500), now + i*0.05, now + i*0.05 + 0.03, 0.1);
-        break;
-      case 'swan':
-        const swanOsc = createOsc('sawtooth', 330, now, now + 0.4, 0.2);
-        swanOsc.frequency.exponentialRampToValueAtTime(440, now + 0.2);
-        break;
-      case 'toucan':
-        createNoise(600, 0.1, 0.4, 'bandpass');
-        createNoise(600, 0.1, 0.4, 'bandpass');
-        break;
-      case 'walrus':
-        createOsc('sine', 60, now, now + 0.8, 0.6);
-        createNoise(100, 0.8, 0.3);
-        break;
       case 'tiger':
         createNoise(220, 0.7, 0.5);
         createOsc('sawtooth', 60, now, now + 0.7, 0.2);
@@ -205,21 +177,7 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
         eOsc.frequency.exponentialRampToValueAtTime(450, now + 0.2);
         eOsc.frequency.exponentialRampToValueAtTime(220, now + 0.9);
         break;
-      case 'wolf':
-        const wOsc = createOsc('sine', 400, now, now + 1.5, 0.3);
-        wOsc.frequency.exponentialRampToValueAtTime(900, now + 0.5);
-        wOsc.frequency.exponentialRampToValueAtTime(700, now + 1.5);
-        break;
-      case 'eagle':
-        const eagleOsc = createOsc('sawtooth', 1600, now, now + 0.5, 0.15);
-        eagleOsc.frequency.exponentialRampToValueAtTime(4200, now + 0.2);
-        break;
-      case 'special_guest':
-        const gOsc = createOsc('sine', 880, now, now + 0.4, 0.1);
-        gOsc.frequency.exponentialRampToValueAtTime(1760, now + 0.4);
-        break;
       default:
-        // Generic chirpy animal sound for anything else
         createOsc('sine', 1200 + Math.random() * 1000, now, now + 0.15, 0.15);
     }
   }, [settings.soundEnabled]);
@@ -291,18 +249,11 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
       setTimeout(() => setShowLevelUp(false), 2000);
     }
 
-    const speedScale = (currentLevel - 1) * 0.08;
-    const currentSpeed = mode === GameMode.KIDS ? 0.35 : (SPEED_INITIAL + speedScale);
+    const currentSpeed = mode === GameMode.KIDS ? 0.35 : (SPEED_INITIAL + (currentLevel - 1) * 0.08);
     const spawnRate = mode === GameMode.KIDS ? 2800 : Math.max(800, SPAWN_RATE_INITIAL - (currentLevel * 70));
 
     if (time - lastSpawnTime.current > spawnRate) {
-      let animalId;
-      if (Math.random() < 0.08) {
-        animalId = 'special_guest';
-      } else {
-        animalId = Math.random() < 0.35 ? targetRef.current.id : getRandomAnimal().id;
-      }
-
+      const animalId = Math.random() < 0.35 ? targetRef.current.id : getRandomAnimal().id;
       const newObj: GameObject = {
         id: Date.now() + Math.random(),
         colorId: animalId,
@@ -316,16 +267,9 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
     }
 
     setObjects(prev => prev.map(obj => ({ ...obj, y: obj.y + (obj.speed * 0.4) })).filter(obj => obj.y < 120));
+    setParticles(prev => prev.map(p => ({...p, x: p.x + p.vx, y: p.y + p.vy, life: p.life - 0.02})).filter(p => p.life > 0));
 
-    setParticles(prev => prev.map(p => ({
-      ...p,
-      x: p.x + p.vx,
-      y: p.y + p.vy,
-      life: p.life - 0.02
-    })).filter(p => p.life > 0));
-
-    const targetInterval = mode === GameMode.KIDS ? 20000 : 10000;
-    if (performance.now() - lastTargetChange.current > targetInterval) {
+    if (performance.now() - lastTargetChange.current > (mode === GameMode.KIDS ? 20000 : 10000)) {
       changeTargetAnimal();
     }
 
@@ -349,23 +293,6 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
     }
   }, [mode, endGame, isGameEnded]);
 
-  const spawnParticles = (x: number, y: number, color: string) => {
-    const newParticles: Particle[] = [];
-    for (let i = 0; i < 8; i++) {
-      newParticles.push({
-        id: Date.now() + i,
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 6,
-        vy: (Math.random() - 0.5) * 6,
-        color,
-        size: Math.random() * 10 + 4,
-        life: 1.0
-      });
-    }
-    setParticles(prev => [...prev, ...newParticles]);
-  };
-
   const handleTap = (obj: GameObject, e: React.PointerEvent) => {
     e.preventDefault();
     if (isGameEnded) return;
@@ -377,14 +304,11 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
       scoreRef.current += pts;
       setScore(scoreRef.current);
       comboRef.current += 1;
-      spawnFloatingText(`✨ +${pts}`, e.clientX, e.clientY, '#4ade80');
-      spawnParticles(e.clientX, e.clientY, targetRef.current.hex);
       if (comboRef.current % 5 === 0) changeTargetAnimal();
     } else {
       playSystemSound('miss');
       if (settings.vibrationEnabled && navigator.vibrate) navigator.vibrate(50);
       comboRef.current = 0;
-      spawnFloatingText('Wrong!', e.clientX, e.clientY, '#ef4444');
       if (mode === GameMode.CLASSIC) {
         setLives(prev => {
           if (prev <= 1) { endGame(); return 0; }
@@ -395,51 +319,8 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
     setObjects(prev => prev.filter(o => o.id !== obj.id));
   };
 
-  const spawnFloatingText = (text: string, x: number, y: number, color: string) => {
-    const id = Date.now();
-    setFloatingTexts(prev => [...prev, { id, text, x, y, color }]);
-    setTimeout(() => setFloatingTexts(prev => prev.filter(ft => ft.id !== id)), 800);
-  };
-
   return (
     <div className="flex-1 flex flex-col relative overflow-hidden safari-bg select-none">
-      <svg className="hidden">
-        <defs>
-          <filter id="animalTexture" x="-25%" y="-25%" width="150%" height="150%" filterUnits="objectBoundingBox">
-            {/* Primary organic turbulence for broad shapes */}
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" seed="42" result="broadNoise"/>
-            {/* Micro-detail turbulence for fine-grained texture (hair/feathers) */}
-            <feTurbulence type="fractalNoise" baseFrequency="2.2" numOctaves="2" seed="13" result="fineNoise"/>
-            <feBlend in="broadNoise" in2="fineNoise" mode="multiply" result="combinedNoise"/>
-            
-            {/* Warp the edges slightly for a non-digital, organic look */}
-            <feDisplacementMap in="SourceGraphic" in2="combinedNoise" scale="3" xChannelSelector="R" yChannelSelector="G" result="warped"/>
-            
-            {/* Dynamic specular sheen for a "moist" or "alive" surface appearance */}
-            <feSpecularLighting in="warped" specularExponent="35" lighting-color="#ffffff" result="specHighlight">
-              <fePointLight x="40%" y="40%" z="150" />
-            </feSpecularLighting>
-            <feComposite in="specHighlight" in2="warped" operator="in" result="maskedSpec"/>
-
-            {/* Diffuse volume pass to ground the character in 3D space */}
-            <feDiffuseLighting in="warped" diffuseConstant="1.2" lighting-color="#ffffff" result="diffuseVol">
-              <feDistantLight azimuth="225" elevation="55" />
-            </feDiffuseLighting>
-            <feComposite in="diffuseVol" in2="warped" operator="in" result="maskedDiffuse"/>
-
-            <feMerge>
-              <feMergeNode in="maskedDiffuse"/>
-              <feMergeNode in="maskedSpec"/>
-            </feMerge>
-            <feComponentTransfer>
-              <feFuncA type="linear" slope="1.1"/>
-            </feComponentTransfer>
-          </filter>
-        </defs>
-      </svg>
-
-      <div className="vines opacity-40"></div>
-      
       <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-start z-30 pointer-events-none">
         <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-2xl">
           <div className="flex items-center gap-2">
@@ -459,35 +340,11 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
               ))}
             </div>
           )}
-          {mode === GameMode.TIME && (
-            <div className={`px-4 py-1.5 rounded-2xl backdrop-blur-md font-black text-xl border-2 border-white/20 ${timeLeft < 10 ? 'bg-red-500/80 animate-pulse text-white' : 'bg-black/60 text-white'}`}>
-              {timeLeft}s
-            </div>
-          )}
           <button onClick={onPause} className="p-3 bg-white/10 rounded-2xl pointer-events-auto active:scale-90 transition border border-white/20 backdrop-blur-xl shadow-xl">
             <Pause size={22} className="text-white" />
           </button>
         </div>
       </div>
-
-      {showLevelUp && (
-        <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div className="text-center animate-[levelUp_2s_ease-out_forwards]">
-            <h2 className="text-6xl font-black text-yellow-400 italic drop-shadow-[0_8px_24px_rgba(0,0,0,1)] uppercase tracking-tighter">Level Up!</h2>
-            <p className="text-2xl font-bold text-white italic drop-shadow-lg">Safari Tier {level}</p>
-          </div>
-        </div>
-      )}
-
-      {floatingTexts.map(ft => (
-        <div key={ft.id} className="fixed z-50 pointer-events-none font-black text-4xl animate-[floatUp_0.8s_ease-out_forwards]" style={{ left: ft.x, top: ft.y, color: ft.color, textShadow: '0 4px 10px rgba(0,0,0,1)' }}>
-          {ft.text}
-        </div>
-      ))}
-      
-      {particles.map(p => (
-        <div key={p.id} className="fixed pointer-events-none rounded-full blur-[1px]" style={{ left: p.x, top: p.y, width: p.size, height: p.size, backgroundColor: p.color, opacity: p.life }} />
-      ))}
 
       <div className="flex-1 relative overflow-hidden touch-none">
         {objects.map(obj => {
@@ -499,88 +356,12 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
               className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 active:scale-125 transition-all duration-150"
               style={{ left: `${obj.x}%`, top: `${obj.y}%`, width: obj.size, height: obj.size, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}
             >
-              <div className="relative flex items-center justify-center animate-[animalFloat_4s_ease-in-out_infinite]">
-                {animal.imageUrl ? (
-                   <div className="relative p-1 rounded-full bg-gradient-to-tr from-yellow-400 via-emerald-500 to-yellow-600 shadow-[0_0_20px_rgba(255,255,255,0.5)] overflow-hidden">
-                     <img 
-                        src={animal.imageUrl} 
-                        alt={animal.name}
-                        className="rounded-full object-cover"
-                        style={{ width: `${obj.size}px`, height: `${obj.size}px`, filter: 'url(#animalTexture)' }}
-                     />
-                     <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
-                   </div>
-                ) : (
-                  <span 
-                    className="filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.7)]" 
-                    style={{ 
-                      fontSize: `${obj.size}px`, 
-                      filter: 'url(#animalTexture) drop-shadow(0 8px 12px rgba(0,0,0,0.7))',
-                      WebkitFilter: 'url(#animalTexture) drop-shadow(0 8px 12px rgba(0,0,0,0.7))' 
-                    }}
-                  >
-                    {animal.emoji}
-                  </span>
-                )}
-                
-                <div 
-                    className="absolute inset-0 pointer-events-none rounded-full" 
-                    style={{ 
-                        background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 60%)',
-                        width: '100%',
-                        height: '100%'
-                    }} 
-                />
-              </div>
-
-              {animal.id === targetAnimal.id && (
-                <div className="absolute inset-0 rounded-full bg-emerald-400/20 blur-3xl animate-pulse -z-10" />
-              )}
+              <span className="text-[50px] drop-shadow-2xl">{animal.emoji}</span>
             </div>
-          ))}
+          )
+        })}
       </div>
 
       <div className={`p-4 pb-8 flex flex-col items-center gap-2 z-20 shadow-[0_-30px_60px_rgba(0,0,0,0.9)] rounded-t-[3rem] border-t-4 ${settings.darkMode ? 'bg-zinc-950/90 border-emerald-900/50' : 'bg-zinc-50 border-emerald-200'} backdrop-blur-xl`}>
         <div className="w-10 h-1 bg-zinc-800 rounded-full mb-1 opacity-40" />
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 drop-shadow-md">Expedition Target</span>
-        <div className="flex items-center gap-8">
-           <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center border-4 border-white/15 shadow-2xl relative overflow-hidden group">
-             {targetAnimal.imageUrl ? (
-                <img 
-                    src={targetAnimal.imageUrl} 
-                    alt={targetAnimal.name}
-                    className="w-full h-full object-cover rounded-[1.8rem] z-10 animate-pulse"
-                    style={{ filter: 'url(#animalTexture)' }}
-                />
-             ) : (
-               <span 
-                  className="text-5xl z-10 drop-shadow-2xl animate-pulse"
-                  style={{ filter: 'url(#animalTexture)' }}
-               >
-                  {targetAnimal.emoji}
-               </span>
-             )}
-             <div className="absolute inset-0 bg-emerald-500/5 backdrop-blur-sm" />
-           </div>
-           <div className="flex flex-col">
-             <span className="text-3xl font-black uppercase italic tracking-tighter drop-shadow-lg leading-none" style={{ color: targetAnimal.hex }}>
-               {targetAnimal.name}
-             </span>
-             <div className="flex items-center gap-2 mt-1.5 opacity-80">
-                <div className="w-2.5 h-2.5 rounded-full animate-ping" style={{ backgroundColor: targetAnimal.hex }} />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white drop-shadow-sm">Jungle Found</span>
-             </div>
-           </div>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -100px); } }
-        @keyframes animalFloat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
-        @keyframes levelUp { 0% { opacity: 0; transform: scale(0.3) rotate(-15deg); } 40% { opacity: 1; transform: scale(1.4) rotate(5deg); } 100% { opacity: 0; transform: scale(1) rotate(0); } }
-      `}</style>
-    </div>
-  );
-};
-
-export default GameEngine;
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald
