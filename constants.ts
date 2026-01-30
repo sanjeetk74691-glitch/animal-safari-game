@@ -1,4 +1,3 @@
-
 import { ColorInfo } from './types';
 
 export const COLORS: ColorInfo[] = [

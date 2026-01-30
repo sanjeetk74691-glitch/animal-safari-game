@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameMode, GameObject, ColorInfo, GameSettings } from '../types.ts';
-import { COLORS, SPEED_INITIAL, SPAWN_RATE_INITIAL, MAX_LIVES, TIME_LIMIT, SCORE_PER_LEVEL, MAX_LEVEL } from '../constants.ts';
+import { GameMode, GameObject, ColorInfo, GameSettings } from '../types';
+import { COLORS, SPEED_INITIAL, SPAWN_RATE_INITIAL, MAX_LIVES, TIME_LIMIT, SCORE_PER_LEVEL, MAX_LEVEL } from '../constants';
 import { Heart, Pause, Trophy, Star } from 'lucide-react';
 
 interface FloatingText {
@@ -53,13 +53,18 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
   const bgIntervalRef = useRef<number | null>(null);
 
   const initAudio = () => {
-    if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 44100 });
+    try {
+      if (!audioCtxRef.current) {
+          audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 44100 });
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+          audioCtxRef.current.resume();
+      }
+      return audioCtxRef.current;
+    } catch (e) {
+      console.warn("Audio initialization failed", e);
+      return null;
     }
-    if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
-    }
-    return audioCtxRef.current;
   };
 
   const startBackgroundMusic = useCallback(() => {
@@ -74,6 +79,8 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
     if (bgIntervalRef.current) return;
 
     const ctx = initAudio();
+    if (!ctx) return;
+
     const masterGain = ctx.createGain();
     masterGain.gain.value = 0.012; 
     masterGain.connect(ctx.destination);
@@ -129,6 +136,7 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
   const playAnimalSound = useCallback((animalId: string) => {
     if (!settings.soundEnabled) return;
     const ctx = initAudio();
+    if (!ctx) return;
     const now = ctx.currentTime;
     
     const createOsc = (type: OscillatorType, freq: number, start: number, end: number, vol: number) => {
@@ -185,6 +193,7 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
   const playSystemSound = useCallback((type: 'miss' | 'targetChange' | 'gameOver' | 'levelUp') => {
     if (!settings.soundEnabled) return;
     const ctx = initAudio();
+    if (!ctx) return;
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
@@ -364,4 +373,20 @@ const GameEngine: React.FC<Props> = ({ mode, settings, onGameOver, onPause }) =>
 
       <div className={`p-4 pb-8 flex flex-col items-center gap-2 z-20 shadow-[0_-30px_60px_rgba(0,0,0,0.9)] rounded-t-[3rem] border-t-4 ${settings.darkMode ? 'bg-zinc-950/90 border-emerald-900/50' : 'bg-zinc-50 border-emerald-200'} backdrop-blur-xl`}>
         <div className="w-10 h-1 bg-zinc-800 rounded-full mb-1 opacity-40" />
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 drop-shadow-md">Expedition Target</span>
+        <div className="flex items-center gap-8">
+           <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center border-4 border-white/15 shadow-2xl relative overflow-hidden">
+             <span className="text-5xl z-10 animate-pulse">{targetAnimal.emoji}</span>
+           </div>
+           <div className="flex flex-col">
+             <span className="text-3xl font-black uppercase italic tracking-tighter drop-shadow-lg leading-none" style={{ color: targetAnimal.hex }}>
+               {targetAnimal.name}
+             </span>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default GameEngine;
